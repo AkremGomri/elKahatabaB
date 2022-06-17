@@ -11,7 +11,7 @@ const userSchema= mongoose.Schema({
     date_de_naissance:{type:Date ,required:true},
     sexe:{type:String ,required:true},
     amis : [
-        {type:mongoose.Schema.Types.userId ,ref:'ami'}
+        {type:mongoose.Schema.Types._Id ,ref:'ami'}
     ],
     imageUrl:{type:String ,required:true}
     
