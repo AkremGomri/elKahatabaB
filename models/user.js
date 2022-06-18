@@ -10,12 +10,11 @@ const userSchema= mongoose.Schema({
     addresse:{type:String ,required:true},
     date_de_naissance:{type:Date ,required:true},
     sexe:{type:String ,required:true},
-    amis : [
-        {type:mongoose.Schema.Types._Id ,ref:'ami'}
-    ],
+     /* amis : [
+        {type:mongoose.Schema.Types._id ,ref:'userSchema'}
+    ],  */
     imageUrl:{type:String ,required:true}
     
-
 });
 userSchema.plugin(uniqueValidator); 
 
