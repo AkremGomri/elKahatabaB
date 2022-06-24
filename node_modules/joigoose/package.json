@@ -1,0 +1,64 @@
+{
+  "name": "joigoose",
+  "version": "8.0.2",
+  "description": "Joi validation for your Mongoose models without the hassle of maintaining two schemas",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "lab test -c -I queueMicrotask",
+    "release": "standard-version",
+    "semantic-release": "semantic-release"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yoitsro/joigoose"
+  },
+  "keywords": [
+    "joi",
+    "mongoose",
+    "validation",
+    "schema",
+    "model",
+    "hapi"
+  ],
+  "author": "Ro Ramtohul",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yoitsro/joigoose/issues"
+  },
+  "homepage": "https://github.com/yoitsro/joigoose",
+  "engines": {
+    "node": ">=10"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "dependencies": {
+    "@hapi/hoek": "^9.1.1",
+    "joi": "^17.3.0"
+  },
+  "devDependencies": {
+    "@hapi/code": "^8.0.2",
+    "@hapi/lab": "^24.1.0",
+    "@semantic-release/changelog": "^5.0.1",
+    "@semantic-release/git": "^9.0.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^7.17.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "mongoose": "^5.11.11",
+    "prettier": "^2.2.1",
+    "semantic-release": "^17.4.3"
+  },
+  "release": {
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/git",
+      "@semantic-release/github"
+    ]
+  }
+}

@@ -3,25 +3,44 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User')
 
 exports.signup = (req, res, next) => {
-  bcrypt.hash(req.body.motDePasse, 10)
-    .then( 
-      hash => {
-        const user = new User({
+  console.log("d5alna");
+  bcrypt.genSalt(10, function(err, salt) {
+    bcrypt.hash(req.body.motDePasse, salt, function(err, hash) {
+      console.log("d5alna lel hash"); 
+      console.log(req.body);
+      me={
         email: req.body.email,
         motDePasse: hash,
         nom: req.body.nom,
         prenom: req.body.prenom,
         age: req.body.age,
-        addresse: req.body.addresse,
+        adresse: req.body.adresse,
         date_de_naissance: req.body.date_de_naissance,
         sexe: req.body.sexe,
         imageUrl: req.body.imageUrl
-      });
-      user.save()
-        .then(() => res.status(201).json({ message: "utilisateur crée!" }))
-        .catch(error => res.status(500).json({ error }));
+      }
+      
+      const user = new User(me);
+       user.joiValidate(me);
+    //if (err) throw err;
+    user.save()
+      .then(() => res.status(201).json({ message: "utilisateur crée!" }))
+      .catch(error => { console.log("masaretch el creation");
+      console.log(error);
+         res.status(500).json({ error }) 
+        } );
+  
+    })
+  });
+  /* bcrypt.hash(, 10)
+    .then( 
+      hash => {
+       
     }).catch( 
-      error => {res.status(500).json({ error })});
+      error => { console.log("mad5alnech lel hash");
+      console.log(error);
+        res.status(500).json({ error })
+      }); */
 
 };
 exports.getAllUser = (req, res, next) => {
