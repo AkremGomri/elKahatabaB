@@ -58,13 +58,16 @@ exports.getAllUser = (req, res, next) => {
 };
 exports.login = (req, res, next) => {
   User.findOne({ email: req.body.email })
-    .then(user => {
+    .then(
+      user => { 
       if (!user) {
+        // console.log("mal9inech user");
         return res.status(401).json({ error: 'Utilisateur non trouvé !' });
       }
+      console.log("l9ina user");
       bcrypt.compare(req.body.motDePasse, user.motDePasse)
         .then(valid => {
-          if (!valid) {
+          if (!valid) { console.log("mot de passe moch s7i7");
             return res.status(401).json({ error: 'Mot de passe incorrect !' });
           }
           res.status(200).json({
@@ -76,7 +79,8 @@ exports.login = (req, res, next) => {
             )
           });
         })
-        .catch(error => res.status(500).json({ error }));
+        .catch(error => { console.log("mochkla fel compare");
+          res.status(500).json({ error })});
     })
     .catch(error => res.status(500).json({ error }));
 };
