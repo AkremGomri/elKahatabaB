@@ -12,6 +12,7 @@ const userSchema= mongoose.Schema({
     horoscope:{type:String},
     city:{type:String },
     gender:{type:String},
+    searchGender:{type:String},
      /* j'aime : [
         {type:mongoose.Schema.Types._id ,ref:'userSchema'}
     ],  */
@@ -28,6 +29,7 @@ userSchema.methods.joiValidate = function(obj) {
         horoscope:Joi.string(),
         city:Joi.string(),
         gender:Joi.string(),
+        searchGender:Joi.string(),
         Photo:Joi.string()
 	});
 	const validation = schema.validate(obj);
