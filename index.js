@@ -5,6 +5,7 @@ const mongoose=require('mongoose');
 const dotenv=require('dotenv');
 const helmet=require('helmet');
 const morgan =require("morgan");
+const path = require('path');
 
 dotenv.config();
 
@@ -23,6 +24,8 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
     next();
   });
+  app.use('/images', express.static(path.join(__dirname, 'images')));
+  
 app.use('/api/auth',userRoutes);
 app.listen(8800,()=> {
     console.log("Backend server is running !");
