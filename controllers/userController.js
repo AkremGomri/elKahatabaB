@@ -3,32 +3,32 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 exports.signup = (req, res, next) => {
-  console.log("d5alna");
-  bcrypt.genSalt(10, function (err, salt) {
-    bcrypt.hash(req.body.password, salt, function (err, hash) {
-      console.log("d5alna lel hash");
-      console.log(req.body);
-      /* const userObject=req.body.user;
-      delete userObject._id; */
-      me = {
-        email: req.body.email,
-        password: hash,
-        fullname:req.body.fullname,
-        pseudo:req.body.pseudo
-        //photo: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-      }
-      const user = new User(me);
-      user.joiValidate(me);
-      user.save()
-        .then(() => res.status(201).json({ message: "utilisateur crée!" }))
-        .catch(error => {
-          console.log("masaretch el creation");
-          console.log(error);
-          res.status(500).json({ error })
-        });
+    bcrypt.hash(req.body.password, 10) 
+      .then((hash) => {
+        console.log("d5alna lel hash");
+        console.log(req.body);
+        /* const userObject=req.body.user;
+        delete userObject._id; */
+        me = {
+          email: req.body.email,
+          password: hash,
+          fullname:req.body.fullname,
+          pseudo:req.body.pseudo
+          //photo: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+        }
+        const user = new User(me);
+        user.joiValidate(me);
+        user.save()
+          .then(() => {
+            res.status(201).json({ message: "utilisateur crée!" })})
+          .catch(error => {
+            console.log("masaretch el creation");
+            console.log(error);
+            res.status(500).json({ error })
+          });
 
-    })
-  });
+      })
+    };
   /* bcrypt.hash(, 10)
     .then( 
       hash => {
@@ -39,7 +39,7 @@ exports.signup = (req, res, next) => {
         res.status(500).json({ error })
       }); */
 
-};
+
 exports.getAllUser = (req, res, next) => {
   User.find().then(
     (Users) => {
@@ -56,15 +56,15 @@ exports.getAllUser = (req, res, next) => {
 exports.login = (req, res, next) => {
   User.findOne({ 
     $or: [{
-      "email": req.body.userEmailPseudo
+      "email": req.body.email
     }, {
-      "pseudo": req.body.userEmailPseudo
+      "pseudo": req.body.email
     }]
    })
     .then(
       user => {
         if (!user) {
-           console.log("mal9inech user");
+           console.log("mal9inech user ", req.body.email);
           return res.status(401).json({ error: 'Utilisateur non trouvé !' });
         }
         console.log("l9ina user");
@@ -74,6 +74,7 @@ exports.login = (req, res, next) => {
               console.log("mot de passe moch s7i7");
               return res.status(401).json({ error: 'Mot de passe incorrect !' });
             }
+            console.log("mot de passe s7i7");
             res.status(200).json({
               userId: user._id,
               token: jwt.sign(
