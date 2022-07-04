@@ -1,7 +1,45 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const fs = require('fs');
+exports.savequesphoto =(req,es,next) => {
+  User.findOne({_id: req.params.id})
+  .then((user) => {
+      if (req.params.id != req.auth.userId) {
+          res.status(401).json({ message : 'Not authorized'});
+      } else {
+          User.updateOne({ _id: req.params.id}, { ...{Photo:`${req.protocol}://${req.get('host')}/images/${req.file.filename}`}, _id: req.params.id})
+          .then(() => {
+            res.status(200).json( 
+              {message : 'Objet modifié!'})
+              console.log(user);
+          } )
+          .catch(error => res.status(401).json({ error }));
+      }
+  })
+  .catch((error) => {
+      res.status(400).json({ error });
+  });
+}
+exports.saveques= (req,res,next)=>{
+  User.findOne({_id: req.params.id})
+  .then((user) => {
+      if (req.params.id != req.auth.userId) {
+          res.status(401).json({ message : 'Not authorized'});
+      } else {
+          User.updateOne({ _id: req.params.id}, { ...req.body, _id: req.params.id})
+          .then(() => {
+            res.status(200).json( 
+              {message : 'Objet modifié!'})
+          } )
+          .catch(error => res.status(401).json({ error }));
+      }
+  })
+  .catch((error) => {
+      res.status(400).json({ error });
+  });
 
+};
 exports.signup = (req, res, next) => {
     bcrypt.hash(req.body.password, 10) 
       .then((hash) => {
@@ -13,7 +51,7 @@ exports.signup = (req, res, next) => {
           email: req.body.email,
           password: hash,
           fullname:req.body.fullname,
-          pseudo:req.body.pseudo
+          pseudo:req.body.pseudo,
           //photo: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
         }
         const user = new User(me);
