@@ -4,11 +4,13 @@ const userCtrl=require('../controllers/userController');
 const multer = require('../middlewares/multer');
 const auth=require('../middlewares/auth');
 
-router.get('/',userCtrl.getAllUser);
+router.get('/',auth,userCtrl.getAllUser);
+router.get('/:id',userCtrl.getOneUser);
 router.post('/signup',userCtrl.signup);
 router.post('/login',userCtrl.login);
-router.post('/ques/:id',auth,userCtrl.saveques);
+router.put('/ques/:id',auth,userCtrl.saveques);
 //router.post('/quesphoto/:id',auth,multer,userCtrl.savequesphoto);
-router.delete('/:id',userCtrl.deleteUser);
+router.delete('/:id',auth,userCtrl.deleteUser);
+//router.put('/:id',auth,userCtrl.user_update);
 //router.get('/edit',aut,userCtrl.editLoad)
 module.exports=router;

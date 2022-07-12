@@ -2,6 +2,17 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const fs = require('fs');
+exports.user_update = (req, res, next) => {
+  User.update({date_of_birth: req.body.date_of_birth,
+     horoscope: req.body.horoscope,
+    city:req.city,
+    gender:req.body.gender}).exec().then(result => {
+    res.status(200).json({message: 'User updated'});
+  }).catch(err => {
+    console.log(err);
+    res.status(500).json({error: err});
+  });
+};
 exports.savequesphoto =(req,es,next) => {
   User.findOne({_id: req.params.id})
   .then((user) => {
@@ -21,19 +32,17 @@ exports.savequesphoto =(req,es,next) => {
       res.status(400).json({ error });
   });
 }
+
 exports.saveques= (req,res,next)=>{
   User.findOne({_id: req.params.id})
   .then((user) => {
-      if (req.params.id != req.auth.userId) {
-          res.status(401).json({ message : 'Not authorized'});
-      } else {
           User.updateOne({ _id: req.params.id}, { ...req.body, _id: req.params.id})
           .then(() => {
             res.status(200).json( 
               {message : 'Objet modifié!'})
           } )
           .catch(error => res.status(401).json({ error }));
-      }
+      
   })
   .catch((error) => {
       res.status(400).json({ error });
@@ -145,3 +154,11 @@ exports.deleteUser = (req, res, next) => {
     }
   );
 };
+exports.getOneUser =(req,res,next)=> {
+  
+  User.findOne({ _id: req.params.id }).then(
+    user =>res.status(200).json(user)
+  ).catch(error =>res.status(404).json({error})
+  );
+
+} 
