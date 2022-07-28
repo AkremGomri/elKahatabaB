@@ -13,9 +13,7 @@ const userSchema= mongoose.Schema({
     city:{type:String ,default: ''},
     gender:{type:String,default: ''},
     searchGender:{type:String,default: ''},
-     /* j'aime : [
-        {type:mongoose.Schema.Types._id ,ref:'userSchema'}
-    ],  */
+     bio:{type:String,default: 'Mon Bio'},
     Photo:{ type: String,default: ''}
     
 });

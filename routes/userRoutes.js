@@ -8,9 +8,11 @@ router.get('/',auth,userCtrl.getAllUser);
 router.get('/:id',userCtrl.getOneUser);
 router.post('/signup',userCtrl.signup);
 router.post('/login',userCtrl.login);
-router.put('/ques/:id',auth,userCtrl.saveques);
-//router.post('/quesphoto/:id',auth,multer,userCtrl.savequesphoto);
-router.delete('/:id',auth,userCtrl.deleteUser);
-//router.put('/:id',auth,userCtrl.user_update);
+router.put('/ques/:id',auth,multer,userCtrl.saveques);
+//router.put('/quesphoto/:id',auth,multer,userCtrl.savequesphoto);
+router.delete('/:id',userCtrl.deleteUser);
+//router.delete('/photo/:id', auth,userCtrl.deletePhoto);
+router.put('/password-reset/:id',auth,userCtrl.resetPassword);
+router.post('/logout',auth,userCtrl.userLogout);
 //router.get('/edit',aut,userCtrl.editLoad)
 module.exports=router;
