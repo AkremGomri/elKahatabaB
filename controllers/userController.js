@@ -2,6 +2,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const fs = require('fs');
+const user = require('../models/User');
+
 exports.savequesphoto =(req,es,next) => {
   User.findOne({_id: req.params.id})
   .then((user) => {
@@ -12,7 +14,6 @@ exports.savequesphoto =(req,es,next) => {
           .then(() => {
             res.status(200).json( 
               {message : 'Objet modifié!'})
-              console.log(user);
           } )
           .catch(error => res.status(401).json({ error }));
       }
@@ -43,10 +44,6 @@ exports.saveques= (req,res,next)=>{
 exports.signup = (req, res, next) => {
     bcrypt.hash(req.body.password, 10) 
       .then((hash) => {
-        console.log("d5alna lel hash");
-        console.log(req.body);
-        /* const userObject=req.body.user;
-        delete userObject._id; */
         me = {
           email: req.body.email,
           password: hash,
@@ -60,23 +57,11 @@ exports.signup = (req, res, next) => {
           .then(() => {
             res.status(201).json({ message: "utilisateur crée!" })})
           .catch(error => {
-            console.log("masaretch el creation");
-            console.log(error);
             res.status(500).json({ error })
           });
 
       })
     };
-  /* bcrypt.hash(, 10)
-    .then( 
-      hash => {
-       
-    }).catch( 
-      error => { console.log("mad5alnech lel hash");
-      console.log(error);
-        res.status(500).json({ error })
-      }); */
-
 
 exports.getAllUser = (req, res, next) => {
   User.find().then(
@@ -91,6 +76,33 @@ exports.getAllUser = (req, res, next) => {
     }
   );
 };
+
+exports.getRecommandedUsers = async (req, res, next) => {
+  const me = await User.findById(req.auth.userId);
+
+  User.find({_id: {$ne: req.auth.userId}}).then(
+    (Users) => {
+      Users = Users.map((user) => {
+        if(me.I_like_users_list.includes(user._id)){
+          return { ...user._doc, allreadyLiked: true, allreadyRefused: false}
+        } else if (me.I_dislike_users_list.includes(user._id)){
+          return { ...user._doc, allreadyRefused: true, allreadyLiked: false}
+        }
+         else {
+          return { ...user._doc, allreadyLiked: false, allreadyRefused: false}
+        }
+      })
+      res.status(200).json(Users);
+    }
+  ).catch(
+    (error) => {
+      res.status(400).json({
+        error: error
+      });
+    }
+  );
+};
+
 exports.login = (req, res, next) => {
   User.findOne({ 
     $or: [{
@@ -102,17 +114,13 @@ exports.login = (req, res, next) => {
     .then(
       user => {
         if (!user) {
-           console.log("mal9inech user ", req.body.email);
           return res.status(401).json({ error: 'Utilisateur non trouvé !' });
         }
-        console.log("l9ina user");
         bcrypt.compare(req.body.password, user.password)
           .then(valid => {
             if (!valid) {
-              console.log("mot de passe moch s7i7");
               return res.status(401).json({ error: 'Mot de passe incorrect !' });
             }
-            console.log("mot de passe s7i7");
             res.status(200).json({
               userId: user._id,
               token: jwt.sign(
@@ -123,11 +131,11 @@ exports.login = (req, res, next) => {
             });
           })
           .catch(error => {
-            console.log("mochkla fel compare");
             res.status(500).json({ error })
           });
       })
-    .catch(error => res.status(500).json({ error }));
+    .catch(error => {      
+      res.status(500).json({ error })});
 };
 
 exports.deleteUser = (req, res, next) => {
@@ -145,3 +153,145 @@ exports.deleteUser = (req, res, next) => {
     }
   );
 };
+
+exports.sendLike = async ( req, res, next ) => { 
+  console.log("sending..."); 
+  var today = new Date();
+  var response = {}
+  const me = await User.findById(req.auth.userId);
+  if(me.I_dislike_users_list.includes(req.params.id)){
+    me.I_dislike_users_list = me.I_dislike_users_list.filter((likedUserId) => {
+      return likedUserId != req.params.id;
+    });      
+    response.message +="changed from Refused Suggestion to a hearted one";
+  }
+  if(me.I_like_users_list.includes(req.params.id))
+    res.status(409).json({ message: "invitation is allready pending" })
+  else {
+    me.I_like_users_list.push(req.params.id);
+    await me.save();
+    const user = await User.findById(req.params.id);
+    if(!user.they_like_me_list.includes(req.auth.userId)){
+      user.they_like_me_list.push(req.auth.userId);
+      user.Notifs.push({
+        senderId: me._id,
+        senderPhoto: me.Photo,
+        message: me.fullname + " has sent you an invitation request",
+        type: "invitation" 
+      })
+      await user.save();
+    }
+  }
+  response.message += " like react has been sent";
+  res.status(201).json(response)
+}
+
+exports.declineSuggestion = async ( req, res, next ) => {  
+  const declinedUserID = req.params.id;
+  const me = await User.findById(req.auth.userId);
+  const user = await User.findById(req.params.id);
+
+  if(me.I_like_users_list.includes(declinedUserID)){
+    me.I_like_users_list = me.I_like_users_list.filter((likedUserId) => {
+      return likedUserId != declinedUserID;
+    });
+    user.Notifs = user.Notifs.filter((notif) => {
+      return notif.type != "invitation" && notif.senderId != me._id
+    })
+
+  }
+
+  if(!me.I_dislike_users_list.includes(declinedUserID)){
+    me.I_dislike_users_list.push(declinedUserID);
+    await me.save();
+    res.status(200).json({ message: "successfully refused" });
+  }
+  if(!user.they_dislike_meList.includes(req.auth.userId)){
+    user.they_dislike_meList = user.they_dislike_meList.push(req.auth.userId);
+    await user.save();
+  }
+
+  res.status(401).json({ message: "a problem accured" });
+}
+
+exports.retrieveLike = async (req, res, next) => {
+  console.log("retrieving");
+  const me = await User.findById(req.auth.userId);
+  me.I_like_users_list = me.I_like_users_list.filter((likedUserId) => {
+    return likedUserId != req.params.id;
+  });
+  
+  const user = await User.findById(req.params.id);
+  user.they_like_me_list = user.they_like_me_list.filter((likeMeUserId) => {
+    return likeMeUserId != req.auth.userId;
+  });
+  user.Notifs = await user.Notifs.filter((notif) => {
+    if(notif.type != "invitation" || notif.senderId.toString() != me._id.toString())
+      return notif;
+  })
+  await me.save();
+  await user.save();
+  res.status(201).json({ message: "retrived like successfully"})
+}
+
+exports.retrieveDislike = async (req, res, next) => {
+  const me = await User.findById(req.auth.userId);
+  me.I_dislike_users_list = me.I_dislike_users_list.filter((likedUserId) => {
+    return likedUserId != req.params.id;
+  });
+  me.save();
+
+
+  res.status(201).json({ message: "retrived like successfully"})
+}
+
+exports.getMyNotifications = async (req, res) => {
+  const me = await User.findById(req.auth.userId);
+  const notifs = me.Notifs;
+  res.status(201).json(notifs);
+}
+
+exports.NotificationsSeen = async (req, res) => {
+  console.log("checking notificationSeen");
+  const me = await User.findById(req.auth.userId);
+  me.Notifs = me.Notifs.map((notif) => {
+    if(notif.isNew == true){
+      notif.isNew = false;
+      notif.last_modified = new Date();
+    }
+    return notif;
+  })
+  me.markModified('Notifs'); //so important so that mongoDB detects changes in the nested object (me.Notifs)
+  me.save();
+  res.status(201).json({ message: "all notifications got successfully updated", success:true})
+}
+
+exports.NotificationsRead = async (req, res) => {
+  const me = await User.findById(req.auth.userId);
+  console.log("id: ",req.params.id);
+  /* better perfomace but not sure it works*/
+  // for(let notif of me.notifs){
+  //   if(notif._id == req.params.id){
+  //     notif.isRead = true;
+  //     notif.last_modified = new Date();
+  //     break;
+  //   }
+  // }
+  /*****************************************/
+  let futurChangedNotif;
+  let previouslyChangedNotif;
+  me.Notifs = me.Notifs.map((notif) => {
+    if(notif._id == req.params.id){
+      previouslyChangedNotif = notif.isRead
+      notif.isRead = true;
+      notif.last_modified = new Date();
+      futurChangedNotif = notif;
+    }
+    return notif;
+  })
+
+  console.log("notiiiifs: ",me.Notifs);
+  me.markModified('Notifs'); //so important so that mongoDB detects changes in the nested object (me.Notifs)
+  me.save();
+  res.status(201).json({ message: "notification.isRead successfully updated", afterChange: futurChangedNotif.isRead, beforeChange:  previouslyChangedNotif})
+}

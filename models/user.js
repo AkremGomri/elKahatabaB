@@ -12,13 +12,39 @@ const userSchema= mongoose.Schema({
     horoscope:{type:String,default: ''},
     city:{type:String ,default: ''},
     gender:{type:String,default: ''},
-    searchGender:{type:String,default: ''},
-     /* j'aime : [
-        {type:mongoose.Schema.Types._id ,ref:'userSchema'}
-    ],  */
-    Photo:{ type: String,default: ''}
     
+    searchGender:{type:String,default: ''},
+    
+    I_like_users_list : [
+        this
+    ],
+
+    they_like_me_list: [
+        this
+    ],
+
+    they_dislike_meList: [
+        this
+    ],
+
+    I_dislike_users_list: [
+        this
+    ],
+
+    Notifs: [
+        {
+            senderId: {type: Object ,required:true},
+            senderPhoto: {type: String },
+            message: {type:String ,required:true,default: ''},
+            type: {type:String, required: true, default:'no Type'},
+            isNew: {type: Boolean, default: true}, 
+            isRead: {type: Boolean, default: false},
+            last_modified: {type: Date, default: new Date(), index: true}
+        }
+    ],
+    Photo:{ type: String,default: ''}
 });
+
 userSchema.methods.joiValidate = function(obj) {
 	const schema =  Joi.object({
         email: Joi.string().email().required(),
