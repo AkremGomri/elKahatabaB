@@ -12,6 +12,9 @@ const userSchema= mongoose.Schema({
     horoscope:{type:String,default: ''},
     city:{type:String ,default: ''},
     gender:{type:String,default: ''},
+    searchGender:{type:String,default: ''},
+     bio:{type:String,default: 'Mon Bio'},
+    Photo:{ type: String,default: ''},
     
     searchGender:{type:String,default: ''},
     
@@ -34,7 +37,7 @@ const userSchema= mongoose.Schema({
     Notifs: [
         {
             senderId: {type: Object ,required:true},
-            senderPhoto: {type: String },
+            senderPhoto: { type: String },
             message: {type:String ,required:true,default: ''},
             type: {type:String, required: true, default:'no Type'},
             isNew: {type: Boolean, default: true}, 
