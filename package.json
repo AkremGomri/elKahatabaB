@@ -2,6 +2,11 @@
   "name": "ElKhataba_back",
   "version": "1.0.0",
   "description": "",
+  "engines": {
+    "node": "14.17.3",
+    "npm": "8.7.0",
+    "yarn": "1.22.18"
+  },
   "main": "server.js",
   "scripts": {
     "start": "nodemon index.js"
@@ -17,6 +22,7 @@
     "express-session": "^1.17.3",
     "fs": "^0.0.1-security",
     "helmet": "^5.1.0",
+    "https": "^1.0.0",
     "joi": "^17.6.0",
     "joi-objectid": "^4.0.2",
     "joigoose": "^8.0.2",

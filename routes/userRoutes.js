@@ -25,3 +25,5 @@ router.put('/password-reset/:id',auth,userCtrl.resetPassword);
 router.post('/logout',auth,userCtrl.userLogout);
 //router.get('/edit',aut,userCtrl.editLoad)
 module.exports=router;
+
+
