@@ -7,6 +7,7 @@ const fs = require('fs');
 
 exports.resetPassword = async (req, res, next) => {
   
+  
   try{
 		const v = new Validator(req.body, {
 			old_password: 'required',
