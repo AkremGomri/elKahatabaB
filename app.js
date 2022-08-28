@@ -9,7 +9,6 @@ const morgan =require("morgan");
 const path = require('path');
 
 //port
-const port = process.env.port;
 const url = process.env.MONGODB_URL;
 const session = require('express-session');
 mongoose.connect(url,
@@ -37,6 +36,5 @@ app.use(express.json());
   app.use('/images', express.static(path.join(__dirname, 'images')));
   
 app.use('/',userRoutes);
-app.listen(port,()=> {
-    console.log("Backend server is running on "+ port);
-})
+
+module.exports = app;

@@ -155,6 +155,7 @@ exports.login = (req, res, next) => {
         bcrypt.compare(req.body.password, user.password)
           .then(valid => {
             if (!valid) {
+              console.log("invalid");
               return res.status(401).json({ error: 'Mot de passe incorrect !' });
             }
             console.log("mot de passe s7i7");
@@ -170,6 +171,7 @@ exports.login = (req, res, next) => {
             });
           })
           .catch(error => {
+            console.log("error");
             res.status(500).json({ error })
           });
       })
