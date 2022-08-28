@@ -40,7 +40,7 @@ const userSchema= mongoose.Schema({
             senderPhoto: { type: String },
             message: {type:String ,required:true,default: ''},
             type: {type:String, required: true, default:'no Type'},
-            isNew: {type: Boolean, default: true}, 
+            isnew: {type: Boolean, default: true}, 
             isRead: {type: Boolean, default: false},
             last_modified: {type: Date, default: new Date(), index: true}
         }
