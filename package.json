@@ -2,9 +2,14 @@
   "name": "ElKhataba_back",
   "version": "1.0.0",
   "description": "",
+  "engines": {
+    "node": "14.17.3",
+    "npm": "8.7.0",
+    "yarn": "1.22.18"
+  },
   "main": "server.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",
