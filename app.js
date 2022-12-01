@@ -11,6 +11,7 @@ const path = require('path');
 //port
 const url = process.env.MONGODB_URL;
 const session = require('express-session');
+
 mongoose.connect(url,
   { useNewUrlParser: true,
     useUnifiedTopology: true })
@@ -21,8 +22,8 @@ mongoose.connect(url,
     // After you declare "app"
     app.use(session({ secret: 'kus is my spirit animal' }));
     app.use(passport.initialize());
-app.use(passport.session());
-app.use(express.json());
+    app.use(passport.session());
+    app.use(express.json());
     app.use(helmet());
     app.use(morgan("common"));
     

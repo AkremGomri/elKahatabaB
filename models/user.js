@@ -13,9 +13,8 @@ const userSchema= mongoose.Schema({
     city:{type:String ,default: ''},
     gender:{type:String,default: ''},
     searchGender:{type:String,default: ''},
-     bio:{type:String,default: 'Mon Bio'},
+    bio:{type:String,default: 'Mon Bio'},
     Photo:{ type: String,default: ''},
-    
     searchGender:{type:String,default: ''},
     
     I_like_users_list : [
@@ -32,6 +31,10 @@ const userSchema= mongoose.Schema({
 
     I_dislike_users_list: [
         this
+    ],
+
+    Matches: [
+        [{ type: mongoose.Schema.ObjectId, ref: 'User' }]
     ],
 
     Notifs: [

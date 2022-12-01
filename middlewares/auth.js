@@ -9,7 +9,6 @@ module.exports= async (req,res ,next)=> {
         const user=await User.findOne({_id:userId})
         req.auth = { userId }; 
         req.user=user;
-        
         if(req.body.userId && req.body.userId !== userId){
             throw 'Invalid user ID';
         }else {
