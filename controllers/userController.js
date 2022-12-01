@@ -78,26 +78,26 @@ delete userObject._userId;
     });
 };
 exports.signup = (req, res, next) => {
-    bcrypt.hash(req.body.password, 10) 
-      .then((hash) => {
-        me = {
-          email: req.body.email,
-          password: hash,
-          fullname:req.body.fullname,
-          pseudo:req.body.pseudo,
-          //photo: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-        }
-        const user = new User(me);
-        user.joiValidate(me);
-        user.save()
-          .then(() => {
-            res.status(201).json({ message: "utilisateur crée!" })})
-          .catch(error => {
-            res.status(500).json({ error })
-          });
+  bcrypt.hash(req.body.password, 10) 
+    .then((hash) => {
+      me = {
+        email: req.body.email,
+        password: hash,
+        fullname:req.body.fullname,
+        pseudo:req.body.pseudo,
+        //photo: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+      }
+      const user = new User(me);
+      user.joiValidate(me);
+      user.save()
+        .then(() => {
+          res.status(201).json({ message: "utilisateur crée!" })})
+        .catch(error => {
+          res.status(500).json({ error })
+        });
 
-      })
-    };
+    })
+};
 
 exports.getAllUser = (req, res, next) => {
   User.find().then(
@@ -116,7 +116,7 @@ exports.getAllUser = (req, res, next) => {
 exports.getRecommandedUsers = async (req, res, next) => {
   const me = await User.findById(req.auth.userId);
 
-  User.find({_id: {$ne: req.auth.userId}}).then(
+  User.find({_id: {$ne: req.auth.userId}}, { "Photo":1, "pseudo":1, "gender": 1, "city": 1}).then(
     (Users) => {
       Users = Users.map((user) => {
         if(me.I_like_users_list.includes(user._id)){
@@ -184,17 +184,13 @@ exports.userLogout= async(req,res,next) =>{
     if (err) { return next(err); }
     res.redirect('/');
   });
-  
-  }
+}
 
 
 exports.getOneUser = (req, res, next) => {
-
   User.findOne({ _id: req.params.id }).then(
     user => res.status(200).json(user)
-  ).catch(error => res.status(404).json({ error })
-  );
-
+  ).catch(error => res.status(404).json({ error }));
 }
 
 exports.deleteUser = (req, res, next) => {
