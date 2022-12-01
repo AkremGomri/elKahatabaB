@@ -218,30 +218,59 @@ exports.sendLike = async ( req, res, next ) => {
   var today = new Date();
   var response = {}
   const me = await User.findById(req.auth.userId);
-  if(me.I_dislike_users_list.includes(req.params.id)){
+  const otherUser = await User.findById(req.params.id);
+
+  // 1) (I already dislike him) ? remove him from disliked users
+  if(me.I_dislike_users_list.includes(otherUser._id)){
     me.I_dislike_users_list = me.I_dislike_users_list.filter((likedUserId) => {
-      return likedUserId != req.params.id;
+      return likedUserId != otherUser._id;
     });      
-    response.message +="changed from Refused Suggestion to a hearted one";
+    response.message +="\nchanged from Refused Suggestion to a hearted one";
   }
-  if(me.I_like_users_list.includes(req.params.id))
-    res.status(409).json({ message: "invitation is allready pending" })
-  else {
-    me.I_like_users_list.push(req.params.id);
-    await me.save();
-    const user = await User.findById(req.params.id);
-    if(!user.they_like_me_list.includes(req.auth.userId)){
-      user.they_like_me_list.push(req.auth.userId);
-      user.Notifs.push({
+  // 2) (he already likes me) ? 1) remove me from his liked users, 2) remove him from my liked users, 3) match both 4) send him a notification 
+  if(otherUser.I_like_users_list.includes(me._id)){
+    otherUser.I_like_users_list = otherUser.I_like_users_list.filter((elem) => {
+      return elem != otherUser._id;
+    })
+
+    me.I_like_users_list = me.I_like_users_list.filter((elem) => {
+      return elem != otherUser._id;
+    })
+
+    me.Matches.push(otherUser._id);
+    otherUser.Matches.push(me._id);
+
+      otherUser.Notifs.push({
         senderId: me._id,
         senderPhoto: me.Photo,
-        message: me.fullname + " has sent you an invitation request",
-        type: "invitation" 
+        message: me.fullname + " \nhas accepted your invitation, you are now matched, you can start chatting",
+        type: "matched" 
       })
-      await user.save();
-    }
+
+      res.status(200).json({ message: "\nyou are now matched! you can start a conversation.", type: "matched" 
+    })
   }
-  response.message += " like react has been sent";
+  // 3) (I have already sent him an anvitation)? do nothing
+  if(me.I_like_users_list.includes(otherUser._id)){
+    res.status(203).json({ message: "\n invitation is allready pending" })
+  }
+  // 4) he is a matched user allready
+  if(me.Matches.includes(otherUser._id)){
+    res.status(203).json({ message: "\n you are already matched you can start chatting" })
+  }
+  // 5) add him in my liked users list, send him a notification
+  else {
+    me.I_like_users_list.push(otherUser._id);
+    await me.save();
+    otherUser.Notifs.push({
+      senderId: me._id,
+      senderPhoto: me.Photo,
+      message: me.fullname + " \n has sent you an invitation request",
+      type: "invitation" 
+    })
+    await otherUser.save();
+  }
+  response.message += " \nlike react has been sent";
   res.status(201).json(response)
 }
 

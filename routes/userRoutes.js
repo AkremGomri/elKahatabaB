@@ -1,6 +1,7 @@
 const express=require('express');
 const router =express.Router();
 const userCtrl=require('../controllers/userController');
+const matchesCtrl=require('../controllers/matchedController');
 const multer = require('../middlewares/multer');
 const auth=require('../middlewares/auth');
 
@@ -24,6 +25,10 @@ router.delete('/:id',userCtrl.deleteUser);
 router.put('/password-reset/:id',auth,userCtrl.resetPassword);
 router.post('/logout',auth,userCtrl.userLogout);
 //router.get('/edit',aut,userCtrl.editLoad)
+
+/*           matches            */
+router.post('/getMyMatches', auth, matchesCtrl.getMyMatchedUsers)
+
+
+//************************************//
 module.exports=router;
-
-
