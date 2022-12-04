@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-//const cookieParser = require('cookie-parser');
+const cookieParser = require('cookie-parser');
 const User = require('../models/User');
 const { Validator } = require('node-input-validator');
 const fs = require('fs');
@@ -56,7 +56,7 @@ exports.resetPassword = async (req, res, next) => {
 			data:err
 		});
 	}
-}
+};
 
 exports.saveques = (req, res, next) => {
   const userObject = req.file ? {
@@ -77,6 +77,7 @@ delete userObject._userId;
       res.status(400).json({ error });
     });
 };
+
 exports.signup = (req, res, next) => {
   bcrypt.hash(req.body.password, 10) 
     .then((hash) => {
@@ -114,6 +115,7 @@ exports.getAllUser = (req, res, next) => {
 };
 
 exports.getRecommandedUsers = async (req, res, next) => {
+
   const me = await User.findById(req.auth.userId);
 
   User.find({_id: {$ne: req.auth.userId}}, { "Photo":1, "pseudo":1, "gender": 1, "city": 1}).then(
@@ -179,19 +181,20 @@ exports.login = (req, res, next) => {
     .catch(error => {      
       res.status(500).json({ error })});
 };
+
 exports.userLogout= async(req,res,next) =>{
   req.logout(function(err) {
     if (err) { return next(err); }
     res.redirect('/');
   });
-}
+};
 
 
 exports.getOneUser = (req, res, next) => {
   User.findOne({ _id: req.params.id }).then(
     user => res.status(200).json(user)
   ).catch(error => res.status(404).json({ error }));
-}
+};
 
 exports.deleteUser = (req, res, next) => {
   User.deleteOne({ _id: req.params.id }).then(
@@ -268,7 +271,7 @@ exports.sendLike = async ( req, res, next ) => {
   }
   response.message += " \nlike react has been sent";
   res.status(201).json(response)
-}
+};
 
 exports.declineSuggestion = async ( req, res, next ) => {  
   const declinedUserID = req.params.id;
@@ -296,7 +299,7 @@ exports.declineSuggestion = async ( req, res, next ) => {
   }
 
   res.status(401).json({ message: "a problem accured" });
-}
+};
 
 exports.retrieveLike = async (req, res, next) => {
   console.log("retrieving");
@@ -316,7 +319,7 @@ exports.retrieveLike = async (req, res, next) => {
   await me.save();
   await user.save();
   res.status(201).json({ message: "retrived like successfully"})
-}
+};
 
 exports.retrieveDislike = async (req, res, next) => {
   const me = await User.findById(req.auth.userId);
@@ -327,13 +330,13 @@ exports.retrieveDislike = async (req, res, next) => {
 
 
   res.status(201).json({ message: "retrived like successfully"})
-}
+};
 
 exports.getMyNotifications = async (req, res) => {
   const me = await User.findById(req.auth.userId);
   const notifs = me.Notifs;
   res.status(201).json(notifs);
-}
+};
 
 exports.NotificationsSeen = async (req, res) => {
   console.log("checking notificationSeen");
@@ -348,7 +351,7 @@ exports.NotificationsSeen = async (req, res) => {
   me.markModified('Notifs'); //so important so that mongoDB detects changes in the nested object (me.Notifs)
   me.save();
   res.status(201).json({ message: "all notifications got successfully updated", success:true})
-}
+};
 
 exports.NotificationsRead = async (req, res) => {
   const me = await User.findById(req.auth.userId);
@@ -379,7 +382,7 @@ exports.NotificationsRead = async (req, res) => {
   me.save();
   res.status(201).json({ message: "notification.isRead successfully updated", afterChange: futurChangedNotif.isRead, beforeChange:  previouslyChangedNotif})
 
-}
+};
 
 exports.deletePhoto=(req,res,next )=>{
   User.findOne({ _id: req.params.id})
@@ -391,4 +394,4 @@ exports.deletePhoto=(req,res,next )=>{
       .catch( error => {
           res.status(500).json({ error :error});
       });
-  }
+};
