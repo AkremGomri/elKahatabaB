@@ -142,6 +142,7 @@ exports.getRecommandedUsers = async (req, res, next) => {
 };
 
 exports.login = (req, res, next) => {
+  console.log(req.body);
   User.findOne({
     $or: [{
       "email": req.body.email

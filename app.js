@@ -35,11 +35,6 @@ mongoose.connect(url,
     });
     
   app.use('/images', express.static(path.join(__dirname, 'images')));
-  app.use('/', (req,res,next) => {
-    console.log("chbinaaa");
-//    res.json({ msg: "ahla bikom" })
-    next();
-  })
 app.use('/',userRoutes);
 
 module.exports = app;
