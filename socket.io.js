@@ -19,7 +19,9 @@ io.on("connection", (socket) => {
     // const uuid = require("uuid");
 
     // io.engine.generateId = (req) => {
-    // return uuid.v4(); // must be unique across all Socket.IO servers
+    //     const x= uuid.v4;
+    //     console.log('uuid: ', x());
+    //     return x(); // must be unique across all Socket.IO servers
     // }
 
     // console.log("uuid: ", uuid);
@@ -29,13 +31,27 @@ io.on("connection", (socket) => {
 
     // console.log(socket);
 
-    console.log(socket.rooms); // Set { <socket.id> }
-    socket.join("room1");
-    console.log(socket.rooms); // Set { <socket.id>, "room1" }
+    // console.log(socket.rooms); // Set { <socket.id> }
+    // socket.join("room1");
+    // console.log(socket.rooms); // Set { <socket.id>, "room1" }
 
-    socket.on("message", (data) => {
+    socket.on("authentification", (userId) => {
+        socket.userId = userId;
+        console.log('userId: ',userId);
+        // console.log("data: ",data);
+    });
+
+    socket.on("message", (data, destination) => {
         console.log("data: ",data);
-        socket.broadcast.emit('message', "here is what I got: " + data)
+        console.log("destination: ",destination);
+        console.log("userId: ",socket.userId);
+        socket.to(destination).emit("message","from " + socket.userId + " he said : " + data);
+        //socket.broadcast.emit('message', "here is what I got: " + data)
+    });
+
+    socket.on("enter room", (data) => {
+        console.log(data + " joined by " + socket.userId);
+        socket.join(data);
     });
 
     // in a middleware

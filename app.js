@@ -11,12 +11,19 @@ const path = require('path');
 //port
 const url = process.env.MONGODB_URL;
 const session = require('express-session');
-
-mongoose.connect(url,
+connect_mongoDB = () => mongoose.connect(url,
   { useNewUrlParser: true,
-    useUnifiedTopology: true })
-    .then(() => console.log('Connexion à MongoDB réussie !'))
-    .catch(() => {console.log('Connexion à MongoDB échouée !')});
+    useUnifiedTopology: true,
+    // reconnectTries: Number.MAX_VALUE, // Never stop trying to reconnect
+    // reconnectInterval: 500, // Reconnect every 500ms
+    // bufferMaxEntries: 0,
+    // connectTimeoutMS: 10000, // Give up initial connection after 10 seconds
+    // socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+  })
+    .then(() => {
+      console.log('Connexion à MongoDB réussie !');
+    })
+      .catch(() => {console.log('Connexion à MongoDB échouée !')});
 
    
     // After you declare "app"
@@ -33,7 +40,15 @@ mongoose.connect(url,
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
       next();
     });
-    
+
+    connect_mongoDB();
+
+  app.use(async (req, res, next) => {
+    if (!mongoose.connection.readyState) {
+      await connect_mongoDB();
+    }
+    next();
+  })
   app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/',userRoutes);
 
