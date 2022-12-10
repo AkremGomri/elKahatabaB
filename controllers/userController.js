@@ -7,7 +7,6 @@ const fs = require('fs');
 
 exports.resetPassword = async (req, res, next) => {
   
-  
   try{
 		const v = new Validator(req.body, {
 			old_password: 'required',
@@ -121,7 +120,9 @@ exports.getRecommandedUsers = async (req, res, next) => {
   User.find({_id: {$ne: req.auth.userId}}, { "Photo":1, "pseudo":1, "gender": 1, "city": 1}).then(
     (Users) => {
       Users = Users.map((user) => {
-        if(me.I_like_users_list.includes(user._id)){
+        if(me.Matches.includes(user._id)){
+          return
+        } else if(me.I_like_users_list.includes(user._id)){
           return { ...user._doc, allreadyLiked: true, allreadyRefused: false}
         } else if (me.I_dislike_users_list.includes(user._id)){
           return { ...user._doc, allreadyRefused: true, allreadyLiked: false}

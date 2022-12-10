@@ -16,7 +16,7 @@ const userSchema= mongoose.Schema({
     bio:{type:String,default: 'Mon Bio'},
     Photo:{ type: String,default: ''},
     searchGender:{type:String,default: ''},
-    connected: {type: Boolean,default: false },
+    // connected: {type: Boolean,default: false },
     
     I_like_users_list : [
         this

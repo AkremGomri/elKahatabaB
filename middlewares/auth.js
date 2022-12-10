@@ -7,9 +7,9 @@ module.exports= async (req,res ,next)=> {
         const decodedToken=jwt.verify(token,'RANDOM_TOKEN_SECRET');
         const userId=decodedToken.userId;
         console.log("user idddd: ",userId);
-        const user=await User.findOne({_id:userId});
+        // const user=await User.findOne({_id:userId});
         req.auth = { userId }; 
-        req.user=user;
+        // req.user=user;
         if(req.body.userId && req.body.userId !== userId){
             throw 'Invalid user ID';
         }else {

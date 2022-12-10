@@ -3,13 +3,14 @@ const jwt = require('jsonwebtoken');
 // const {getMyMatchedUsers} = require('../controllers/matchedController')  
 
 module.exports = (io) => {
-
-  io.use(function(socket, next){
+  io.use( function(socket, next){
     if (socket.handshake.query && socket.handshake.query.token){
-      jwt.verify(socket.handshake.query.token, 'RANDOM_TOKEN_SECRET', function(err, decoded) {
+      jwt.verify(socket.handshake.query.token, 'RANDOM_TOKEN_SECRET', async function(err, decoded) {
         if (err) return next(new Error('Authentication error'));
         socket.decoded = decoded;
-        socket.userId = decoded;
+        socket.userId = decoded.userId;
+        const user= await User.findOne({_id:socket.userId});
+        socket.user = user;
         next();
       });
     }
@@ -19,8 +20,13 @@ module.exports = (io) => {
   })
 
   io.on("connection", (socket) => {
-      console.log("User connected with the id : " + socket.id);
-      console.log("decoded : ",socket.decoded.userId);
+    const count = io.engine.clientsCount;
+// may or may not be similar to the count of Socket instances in the main namespace, depending on your usage
+    const count2 = io.of("/").sockets.size;
+      console.log("count: ", count, " count2: ", count2);
+      console.log("User connected with socket id : " + socket.id);
+      console.log("user id : ",socket.decoded.userId);
+
     const users = [];
     for (let [id, socket] of io.of("/").sockets) {
       users.push({
@@ -28,7 +34,8 @@ module.exports = (io) => {
         userId: socket.userId,
       });
     }
-    socket.emit("users", users);
+    console.log("users: ",users);
+    // socket.emit("users", users);
 
     socket.on("disconnect", (userId) => {
       socket.broadcast.emit("user disconnected", socket.id);
@@ -59,6 +66,18 @@ module.exports = (io) => {
         roomId = [ data, socket.userId].sort((a,b) => a-b).join("");
         socket.join(roomId);
         console.log("rooms: ",socket.rooms); // the Set contains at least the socket ID
+
+
+        MyFriendsIds = socket.user.Matches.map((userId) => userId.toString()) // MyFriendsIds: list of all the matched yours with this socket
+
+        MyFriendsIds.map((userId) => {
+          if(users.userId == userId){
+            console.log("");
+            console.log("");
+            console.log("");
+            console.log("this is an intresting user: ",userId);
+          }
+        })
         // const sockets = await io.fetchSockets();
         const sockets = Array.from(io.sockets.sockets).map(socket => socket[0]);
         console.log("sockets: ",sockets);
