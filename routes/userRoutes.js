@@ -1,6 +1,7 @@
 const express=require('express');
 const router =express.Router();
 const userCtrl=require('../controllers/userController');
+const roomController=require('../controllers/roomController');
 const matchesCtrl=require('../controllers/matchedController');
 const multer = require('../middlewares/multer');
 const auth=require('../middlewares/auth');
@@ -8,9 +9,9 @@ const auth=require('../middlewares/auth');
 //router.post('/quesphoto/:id',auth,multer,userCtrl.savequesphoto);
 router.get('/recommanded', auth,  userCtrl.getRecommandedUsers)
 router.get('/getMyNotifs', auth, userCtrl.getMyNotifications)
+router.get('/conversations', roomController.getAllConversations);
 router.get('/', userCtrl.getAllUser);
 router.get('/:id',userCtrl.getOneUser);
-
 router.delete('/:id',userCtrl.deleteUser);
 
 router.post('/signup',userCtrl.signup);
@@ -29,6 +30,7 @@ router.post('/notificationsRead/:id', auth, userCtrl.NotificationsRead)
 router.put('/ques/:id',auth,multer,userCtrl.saveques);
 router.put('/password-reset/:id',auth,userCtrl.resetPassword);
 
+router.delete('/delete-conversation/:roomId', roomController.deleteConversation);
 /*           matches            */
 
 

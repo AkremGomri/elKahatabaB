@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const User = require('../models/User');
+const Room = require('../models/Room');
 const { Validator } = require('node-input-validator');
 const fs = require('fs');
 
@@ -119,10 +120,9 @@ exports.getRecommandedUsers = async (req, res, next) => {
 
   User.find({_id: {$ne: req.auth.userId}}, { "Photo":1, "pseudo":1, "gender": 1, "city": 1}).then(
     (Users) => {
+      Users = Users.filter((user) => !me.Matches.includes(user._id))
       Users = Users.map((user) => {
-        if(me.Matches.includes(user._id)){
-          return
-        } else if(me.I_like_users_list.includes(user._id)){
+       if(me.I_like_users_list.includes(user._id)){
           return { ...user._doc, allreadyLiked: true, allreadyRefused: false}
         } else if (me.I_dislike_users_list.includes(user._id)){
           return { ...user._doc, allreadyRefused: true, allreadyLiked: false}
@@ -258,6 +258,15 @@ exports.sendLike = async ( req, res, next ) => {
     })
       await otherUser.save();
       await me.save();
+
+      const newRoom = {
+        id: [ me._id, otherUser._id].sort().join(""),
+        users: [],
+        messages: [],
+        //photo: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+      }
+      const room = new Room(newRoom);
+      await room.save();
       return res.status(200).json({ message: "\nyou are now matched! you can start a conversation.", type: "matched" 
     })
   }

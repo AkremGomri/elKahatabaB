@@ -21,21 +21,34 @@ module.exports = (io) => {
 
   io.on("connection", (socket) => {
     const count = io.engine.clientsCount;
-// may or may not be similar to the count of Socket instances in the main namespace, depending on your usage
+    // may or may not be similar to the count of Socket instances in the main namespace, depending on your usage
     const count2 = io.of("/").sockets.size;
       console.log("count: ", count, " count2: ", count2);
       console.log("User connected with socket id : " + socket.id);
       console.log("user id : ",socket.decoded.userId);
 
-    const users = [];
-    for (let [id, socket] of io.of("/").sockets) {
-      users.push({
-        id: id,
-        userId: socket.userId,
-      });
-    }
-    console.log("users: ",users);
-    // socket.emit("users", users);
+      
+      
+      var connectedUsers = [];
+      for (let [id, socket] of io.of("/").sockets) {
+        connectedUsers.push({
+          socket,
+          socketId: id,
+          userId: socket.userId,
+        });
+      }
+      
+    // tell all my friends that I am connected
+    const MyFriendsIds = socket.user.Matches.map((userId) => userId.toString());
+    connectedUsers.map((elem) => {
+      const test = MyFriendsIds.includes(elem.userId);
+      if(test){
+        // send him a notif
+        socket.to(elem.socketId).emit('new user connected',socket.userId);
+      }
+    })
+    console.log("connectedUsers: ",connectedUsers);
+    /*************************************************/
 
     socket.on("disconnect", (userId) => {
       socket.broadcast.emit("user disconnected", socket.id);
@@ -62,22 +75,14 @@ module.exports = (io) => {
         socket.to(destination).emit("message","from " + socket.userId + " he said : " + data);
     });
 
-    socket.on("enter room", async(data) => {
-        roomId = [ data, socket.userId].sort((a,b) => a-b).join("");
+    socket.on("join room", async(data) => {
+      // MyFriendsIds = socket.user.Matches.map((userId) => userId.toString()) // MyFriendsIds: list of all the matched yours with this socket
+      if (MyFriendsIds.includes(data)){
+        roomId = [ data, socket.userId].sort().join("");
         socket.join(roomId);
-        console.log("rooms: ",socket.rooms); // the Set contains at least the socket ID
 
+      }
 
-        MyFriendsIds = socket.user.Matches.map((userId) => userId.toString()) // MyFriendsIds: list of all the matched yours with this socket
-
-        MyFriendsIds.map((userId) => {
-          if(users.userId == userId){
-            console.log("");
-            console.log("");
-            console.log("");
-            console.log("this is an intresting user: ",userId);
-          }
-        })
         // const sockets = await io.fetchSockets();
         const sockets = Array.from(io.sockets.sockets).map(socket => socket[0]);
         console.log("sockets: ",sockets);
