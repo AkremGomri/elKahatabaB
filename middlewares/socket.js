@@ -24,16 +24,15 @@ module.exports = (io) => {
     const count = io.engine.clientsCount;
     // may or may not be similar to the count of Socket instances in the main namespace, depending on your usage
     const count2 = io.of("/").sockets.size;
-      console.log("count: ", count, " count2: ", count2);
-      console.log("User connected with socket id : " + socket.id);
-      console.log("user id : ",socket.decoded.userId);
+      // console.log("count: ", count, " count2: ", count2);
+      // console.log("User connected with socket id : " + socket.id);
+      // console.log("user id : ",socket.decoded.userId);
 
       
       
       var connectedUsers = [];
       for (let [id, socket] of io.of("/").sockets) {
         connectedUsers.push({
-          socket,
           socketId: id,
           userId: socket.userId,
         });
@@ -45,11 +44,28 @@ module.exports = (io) => {
       const test = MyFriendsIds.includes(elem.userId);
       if(test){
         // send him a notif
-        socket.to(elem.socketId).emit('new user connected',socket.id);
+        // console.log("here: ",elem.socketId);
+        // console.log("socketId: ",socket.id," userId: ",socket.userId);
+        socket.to(elem.socketId).emit('new user connected',
+          socket.id,
+          socket.userId,
+        );
       }
     })
-    connectedUsers.forEach((elem) => console.log("connectedUsers: ",elem.socket.id));
+    connectedUsers.forEach((elem) => console.log("connectedUsers: ",elem.socketId));
     /*************************************************/
+    socket.on("notify he got connected", (senderSocketId, senderId) => {
+      // console.log("hamdoulaaaaaaaaah", socket.userId, senderSocketId ,senderId);
+      // console.log("my friends: ",MyFriendsIds);
+      console.log(MyFriendsIds.includes(senderId));
+      if(MyFriendsIds.includes(senderId)){
+        connectedUsers.push({
+          socketId: senderSocketId,
+          userId: senderId
+        })
+      }
+      // console.log(connectedUsers);
+    })
 
     socket.on("disconnect", (userId) => {
       socket.broadcast.emit("user disconnected", socket.id);
@@ -68,13 +84,7 @@ module.exports = (io) => {
       });
 
     // console.log("uuid: ", uuid);
-    socket.on("private message", (anotherSocketId, msg) => {
-        socket.to(anotherSocketId).emit("private message", socket.id, msg);
-    });
 
-    socket.on("message", (data, destination) => {
-        socket.to(destination).emit("message","from " + socket.userId + " he said : " + data);
-    });
 
     socket.on("join private room", async(data) => {
       // MyFriendsIds = socket.user.Matches.map((userId) => userId.toString()) // MyFriendsIds: list of all the matched yours with this socket
@@ -82,6 +92,7 @@ module.exports = (io) => {
         roomId = [ data, socket.userId].sort().join("");
         socket.join(roomId);
         console.log("1) rooommm: ",roomId);
+        console.log(connectedUsers);
         connectedUsers.map((connectedUser) => {
           console.log("1.1) ",connectedUser.userId == data);
           if(connectedUser.userId == data){
@@ -127,18 +138,13 @@ module.exports = (io) => {
     socket.on("trying to connect with the new user", (data) => {
       const otherUser = User.findById(data.userId)
         .then((res) => {
-          console.log("otherUser: ",res.Matches);
           matchedList = res.Matches;
           if(matchedList.includes(socket.userId.valueOf().userId)){
             roomId = [ data.userId, socket.userId].sort((a,b) => a-b).join("");
             socket.join(roomId);
-            console.log("finally done!");
-            console.log(roomId);
 
-            console.log("rooms: ",socket.rooms); // the Set contains at least the socket ID
             // const sockets = await io.fetchSockets();
             const sockets = Array.from(io.sockets.sockets).map(socket => socket[0]);
-            console.log("sockets: ",sockets);
 
           } else {
             console.log("you are not matched ! ");
@@ -147,11 +153,20 @@ module.exports = (io) => {
         .catch( err => console.log(err));
     })
 
+  // socket.on("private message", (anotherSocketId, msg) => {
+  //   console.log("za7");
+  //     socket.to(anotherSocketId).emit("private message", socket.id, msg);
+  // });
+
+  socket.on("message", (data, destination) => {
+    console.log("dest: ",destination);
+      socket.to(destination).emit("message","from " + socket.userId + " he said : " + data);
+  });
+
     socket.on("private message", (result) => {
-      console.log("userId: ",result.userId, " socketId: ",socket.userId);
       roomId = [ result.userId, socket.userId].sort().join("");
-      console.log("sent to : ",roomId, " message: ",result.msg);
-      io.to(roomId).emit("private message", result.msg)
+      console.log("private message: ", result.msg, socket.userId, roomId);
+      io.to(roomId).emit("private message", result.msg, socket.userId)
     })
   });
 
