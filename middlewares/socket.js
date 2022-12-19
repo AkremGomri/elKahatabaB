@@ -24,7 +24,7 @@ module.exports = (io) => {
     const count = io.engine.clientsCount;
     // may or may not be similar to the count of Socket instances in the main namespace, depending on your usage
     const count2 = io.of("/").sockets.size;
-      // console.log("count: ", count, " count2: ", count2);
+      console.log("count: ", count, " count2: ", count2);
       // console.log("User connected with socket id : " + socket.id);
       // console.log("user id : ",socket.decoded.userId);
 
@@ -57,14 +57,15 @@ module.exports = (io) => {
     socket.on("notify he got connected", (senderSocketId, senderId) => {
       // console.log("hamdoulaaaaaaaaah", socket.userId, senderSocketId ,senderId);
       // console.log("my friends: ",MyFriendsIds);
-      console.log(MyFriendsIds.includes(senderId));
+      console.log("myyyyne: ",MyFriendsIds.includes(senderId));
       if(MyFriendsIds.includes(senderId)){
         connectedUsers.push({
           socketId: senderSocketId,
           userId: senderId
         })
       }
-      // console.log(connectedUsers);
+      socket.to(socket.id).emit("take all connected",  MyFriendsIds)
+      console.log(connectedUsers);
     })
 
     socket.on("disconnect", (userId) => {
@@ -80,8 +81,12 @@ module.exports = (io) => {
     });
 
     socket.on('disconnecting', () => {
-        console.log(socket.rooms); // the Set contains at least the socket ID
-      });
+      console.log(socket.rooms); // the Set contains at least the socket ID
+    });
+
+    socket.on('test', (data) => {
+      console.log("te5dem: ",data); // the Set contains at least the socket ID
+    });
 
     // console.log("uuid: ", uuid);
 
@@ -135,23 +140,23 @@ module.exports = (io) => {
       }
     });
 
-    socket.on("trying to connect with the new user", (data) => {
-      const otherUser = User.findById(data.userId)
-        .then((res) => {
-          matchedList = res.Matches;
-          if(matchedList.includes(socket.userId.valueOf().userId)){
-            roomId = [ data.userId, socket.userId].sort((a,b) => a-b).join("");
-            socket.join(roomId);
+    // socket.on("trying to connect with the new user", (data) => {
+    //   const otherUser = User.findById(data.userId)
+    //     .then((res) => {
+    //       matchedList = res.Matches;
+    //       if(matchedList.includes(socket.userId.valueOf().userId)){
+    //         roomId = [ data.userId, socket.userId].sort((a,b) => a-b).join("");
+    //         socket.join(roomId);
 
-            // const sockets = await io.fetchSockets();
-            const sockets = Array.from(io.sockets.sockets).map(socket => socket[0]);
+    //         // const sockets = await io.fetchSockets();
+    //         const sockets = Array.from(io.sockets.sockets).map(socket => socket[0]);
 
-          } else {
-            console.log("you are not matched ! ");
-          }
-        })
-        .catch( err => console.log(err));
-    })
+    //       } else {
+    //         console.log("you are not matched ! ");
+    //       }
+    //     })
+    //     .catch( err => console.log(err));
+    // })
 
   // socket.on("private message", (anotherSocketId, msg) => {
   //   console.log("za7");
@@ -166,7 +171,7 @@ module.exports = (io) => {
     socket.on("private message", (result) => {
       roomId = [ result.userId, socket.userId].sort().join("");
       console.log("private message: ", result.msg, socket.userId, roomId);
-      io.to(roomId).emit("private message", result.msg, socket.userId)
+      io.to(roomId).emit("private message", result.msg, result.userId, roomId, result.date)
     })
   });
 

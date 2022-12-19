@@ -63,17 +63,21 @@ exports.saveques = (req, res, next) => {
     ...JSON.parse(req.body.user),
     Photo: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
 } : { ...req.body };
+console.log("cvn ? ", req.params.id);
 delete userObject._userId;
   User.findOne({ _id: req.params.id })
     .then((user) => {
+      console.log("cvn ?2");
       User.updateOne({ _id: req.params.id }, {  ...userObject, _id: req.params.id })
         .then(() => {
+          console.log("cvn ?3");
           res.status(200).json(
             { message: 'Objet modifié!' })
         })
         .catch(error => res.status(401).json({ error }));
     })
     .catch((error) => {
+      console.log("cvn ?555555: ");
       res.status(400).json({ error });
     });
 };
@@ -221,6 +225,7 @@ exports.sendLike = async ( req, res, next ) => {
   const me = await User.findById(req.auth.userId);
   const otherUser = await User.findById(req.params.id);
 
+  console.log("like senttt");
   // 1) (I already dislike him) ? remove him from disliked users, then next()
   if(me.I_dislike_users_list.includes(otherUser._id)){
     me.I_dislike_users_list = me.I_dislike_users_list.filter((likedUserId) => {
@@ -235,6 +240,7 @@ exports.sendLike = async ( req, res, next ) => {
   }
   // 3) (he already likes me) ? 1) remove me from his liked users, 2) remove him from my liked users, 3) match both 4) send him a notification 
   if(otherUser.I_like_users_list.includes(me._id)){
+    console.log("t3adet");
     otherUser.I_like_users_list = otherUser.I_like_users_list.filter((elem) => {
       console.log("elem: ",elem.toString());
       console.log("me: ", me._id.toString());
