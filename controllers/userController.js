@@ -5,9 +5,10 @@ const User = require('../models/User');
 const Room = require('../models/Room');
 const { Validator } = require('node-input-validator');
 const fs = require('fs');
+const socket = require('../middlewares/socket');
+const { default: mongoose } = require('mongoose');
 
-exports.resetPassword = async (req, res, next) => {
-  
+exports.resetPassword = async (req, res, next) => { 
   try{
 		const v = new Validator(req.body, {
 			old_password: 'required',
@@ -63,21 +64,17 @@ exports.saveques = (req, res, next) => {
     ...JSON.parse(req.body.user),
     Photo: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
 } : { ...req.body };
-console.log("cvn ? ", req.params.id);
 delete userObject._userId;
   User.findOne({ _id: req.params.id })
     .then((user) => {
-      console.log("cvn ?2");
       User.updateOne({ _id: req.params.id }, {  ...userObject, _id: req.params.id })
         .then(() => {
-          console.log("cvn ?3");
           res.status(200).json(
             { message: 'Objet modifié!' })
         })
         .catch(error => res.status(401).json({ error }));
     })
     .catch((error) => {
-      console.log("cvn ?555555: ");
       res.status(400).json({ error });
     });
 };
@@ -167,7 +164,6 @@ exports.login = (req, res, next) => {
               console.log("invalid");
               return res.status(401).json({ error: 'Mot de passe incorrect !' });
             }
-            console.log("mot de passe s7i7");
             const token=jwt.sign(
               { userId: user._id },
               'RANDOM_TOKEN_SECRET',
@@ -240,11 +236,7 @@ exports.sendLike = async ( req, res, next ) => {
   }
   // 3) (he already likes me) ? 1) remove me from his liked users, 2) remove him from my liked users, 3) match both 4) send him a notification 
   if(otherUser.I_like_users_list.includes(me._id)){
-    console.log("t3adet");
     otherUser.I_like_users_list = otherUser.I_like_users_list.filter((elem) => {
-      console.log("elem: ",elem.toString());
-      console.log("me: ", me._id.toString());
-      console.log(elem.toString() == me._id.toString());
       return elem.toString() != me._id.toString();
     })
 
@@ -256,12 +248,15 @@ exports.sendLike = async ( req, res, next ) => {
     me.Matches.push(otherUser._id);
     otherUser.Matches.push(me._id);
     
-    otherUser.Notifs.push({
+    const newNotification = {
       senderId: me._id,
       senderPhoto: me.Photo,
       message: me.fullname + " \nhas accepted your invitation, you are now matched, you can start chatting",
       type: "matched" 
-    })
+    }
+
+    otherUser.Notifs.push(newNotification);
+    socket.notificationSent(otherUser._id ,newNotification)
       await otherUser.save();
       await me.save();
 
@@ -283,23 +278,49 @@ exports.sendLike = async ( req, res, next ) => {
   // 5) add him in my liked users list, send him a notification
   else {
     me.I_like_users_list.push(otherUser._id);
-    await me.save();
-    otherUser.Notifs.push({
+    console.log("saving me");
+    try{
+      await me.save();
+    } catch (error){
+      console.log("error while saving me "+error);
+      console.log(me.Notifs);
+    }
+    console.log("saved");
+    const newId = new mongoose.Types.ObjectId();
+
+    const newNotification = {
+      _id: newId,
       senderId: me._id,
       senderPhoto: me.Photo,
       message: me.fullname + " \n has sent you an invitation request",
       type: "invitation" 
-    })
-    await otherUser.save();
+    }
+    otherUser.Notifs.push(newNotification)
+    socket.notificationSent(otherUser._id ,newNotification)
+    console.log("saving other user");
+    try{
+      await otherUser.save();
+    }
+    catch (error){
+      console.log("error while saving otherUser "+error);
+    }
+    console.log("saved");
   }
   response.message += " \nlike react has been sent";
+  console.log("sending...done");
   return res.status(201).json(response)
 };
 
 exports.declineSuggestion = async ( req, res, next ) => {  
   const declinedUserID = req.params.id;
-  const me = await User.findById(req.auth.userId);
-  const user = await User.findById(req.params.id);
+  let me;
+  let user;
+  try{
+    me = await User.findById(req.auth.userId);
+    user = await User.findById(req.params.id);
+  } catch (error){
+    console.log("error while getting users "+error);
+  }
 
   if(me.I_like_users_list.includes(declinedUserID)){
     me.I_like_users_list = me.I_like_users_list.filter((likedUserId) => {
@@ -313,32 +334,46 @@ exports.declineSuggestion = async ( req, res, next ) => {
 
   if(!me.I_dislike_users_list.includes(declinedUserID)){
     me.I_dislike_users_list.push(declinedUserID);
-    await me.save();
+    try{
+      await me.save();
+    } catch (error){
+      console.log("error while saving me "+error);
+    }
     res.status(200).json({ message: "successfully refused" });
   }
   if(!user.they_dislike_meList.includes(req.auth.userId)){
     user.they_dislike_meList = user.they_dislike_meList.push(req.auth.userId);
-    await user.save();
+    try{
+      await user.save(); 
+    } catch (error){
+      console.log("error while saving user "+error);
+    }
   }
 
   res.status(401).json({ message: "a problem accured" });
 };
 
 exports.retrieveLike = async (req, res, next) => {
-  console.log("retrieving");
   const me = await User.findById(req.auth.userId);
   me.I_like_users_list = me.I_like_users_list.filter((likedUserId) => {
     return likedUserId != req.params.id;
   });
-  
   const user = await User.findById(req.params.id);
   user.they_like_me_list = user.they_like_me_list.filter((likeMeUserId) => {
     return likeMeUserId != req.auth.userId;
   });
+  console.log("error");
   user.Notifs = await user.Notifs.filter((notif) => {
-    if(notif.type != "invitation" || notif.senderId.toString() != me._id.toString())
+    if(notif?.type != "invitation" || notif.senderId?.toString() != me._id.toString()){
+      console.log("errorrrrr");
       return notif;
+    }
+    else {
+      console.log("heree: "+me._id + " senderId: "+notif.senderId );
+      socket.notificationRetrieved(user._id, {type: "invitation", senderId: notif.senderId? notif.senderId: null});
+    }
   })
+
   await me.save();
   await user.save();
   res.status(201).json({ message: "retrived like successfully"})
@@ -378,7 +413,6 @@ exports.NotificationsSeen = async (req, res) => {
 
 exports.NotificationsRead = async (req, res) => {
   const me = await User.findById(req.auth.userId);
-  console.log("id: ",req.params.id);
   /* better perfomace but not sure it works*/
   // for(let notif of me.notifs){
   //   if(notif._id == req.params.id){

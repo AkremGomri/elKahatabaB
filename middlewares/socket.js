@@ -1,8 +1,9 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 // const {getMyMatchedUsers} = require('../controllers/matchedController')  
+const connectedUsers = [];
 
-module.exports = (io) => {
+const socket = (io) => {
   io.use( function(socket, next){
     if (socket.handshake.query && socket.handshake.query.token){
       jwt.verify(socket.handshake.query.token, 'RANDOM_TOKEN_SECRET', async function(err, decoded) {
@@ -21,32 +22,29 @@ module.exports = (io) => {
   })
 
   io.on("connection", (socket) => {
-    const count = io.engine.clientsCount;
-    // may or may not be similar to the count of Socket instances in the main namespace, depending on your usage
-    const count2 = io.of("/").sockets.size;
-      console.log("count: ", count, " count2: ", count2);
-      // console.log("User connected with socket id : " + socket.id);
-      // console.log("user id : ",socket.decoded.userId);
 
+    // print the number of all connected users
+    const count = io.engine.clientsCount;
+    const count2 = io.of("/").sockets.size;
+    console.log("count: ", count, " count2: ", count2);
+
+    // store this new connection socket in connectedUsers
+    connectedUsers.push({
+      socketId: socket.id,
+      userId: socket.userId,
+      socket: socket,
+    });
       
       
-      var connectedUsers = [];
-      for (let [id, socket] of io.of("/").sockets) {
-        connectedUsers.push({
-          socketId: id,
-          userId: socket.userId,
-        });
-      }
-      
-    // tell all my friends that I am connected
+    // tell all my friends that I am connected to
     const MyFriendsIds = socket.user.Matches.map((userId) => userId.toString());
     connectedUsers.map((elem) => {
-      const test = MyFriendsIds.includes(elem.userId);
-      if(test){
+      const isMyFriend = MyFriendsIds.includes(elem.userId);
+      if(isMyFriend){
         // send him a notif
         // console.log("here: ",elem.socketId);
         // console.log("socketId: ",socket.id," userId: ",socket.userId);
-        socket.to(elem.socketId).emit('new user connected',
+        socket.to(elem.socketId).emit('new friend just connected',
           socket.id,
           socket.userId,
         );
@@ -175,4 +173,22 @@ module.exports = (io) => {
     })
   });
 
+  
 }
+
+function notificationSent(userId, notification) {
+  connectedUsers.map((user, index) => {
+    if(user.userId == userId){
+      user.socket.emit('newNotification', notification)
+    }
+  })
+}
+
+function notificationRetrieved(userId, data) {
+  connectedUsers.map((user, index) => {
+    if(user.userId == userId){
+      user.socket.emit('deleteNotification', data)
+    }
+  })
+}
+module.exports = { socket, notificationSent, notificationRetrieved}

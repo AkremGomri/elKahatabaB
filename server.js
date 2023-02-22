@@ -52,7 +52,7 @@ const errorHandler = error => {
   
   //*  Init socket *//
   const io = socket(server, { 
-    cors: {    
+    cors: {
       origin: ["http://127.0.0.1:5502", "http://192.168.43.27:8081", "http://localhost:3000"],
       methods: ["GET", "POST"],
       allowedHeaders: ["my-custom-header"],
@@ -61,6 +61,6 @@ const errorHandler = error => {
   });
   
   /* Middleware */
-  require('./middlewares/socket')(io);
+  require('./middlewares/socket').socket(io);
 
 module.exports = server;
