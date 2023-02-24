@@ -34,8 +34,7 @@ const socket = (io) => {
       userId: socket.userId,
       socket: socket,
     });
-      
-      
+
     // tell all my friends that I am connected to
     const MyFriendsIds = socket.user.Matches.map((userId) => userId.toString());
     connectedUsers.map((elem) => {
