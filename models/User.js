@@ -17,7 +17,7 @@ const userSchema= mongoose.Schema({
     Photo:{ type: String,default: ''},
     searchGender:{type:String,default: ''},
     // connected: {type: Boolean,default: false },
-    
+    friends:[{type:mongoose.Schema.Types.ObjectId,ref:"User"}],
     I_like_users_list : [
         this
     ],
