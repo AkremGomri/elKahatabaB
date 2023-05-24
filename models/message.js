@@ -8,7 +8,7 @@ const MessageSchema = mongoose.Schema({
   },
   room_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Room",
+    ref: "Group",//at this stage we use group scheme
     require: true,
   },
   content: {
@@ -19,7 +19,7 @@ const MessageSchema = mongoose.Schema({
     type: String,
   },
   isActive:{
-    type:boolean,
+    type:Boolean,
     default:true,
   }
 });

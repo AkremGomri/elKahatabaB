@@ -11,12 +11,12 @@ const GroupSchema = mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
         is_Active:{
-            type:boolean,
-            default:false
+            type:Boolean,
+            default:true
         }
     }],
     isActive:{
-        type:boolean,
+        type:Boolean,
         default:true
     }
 })

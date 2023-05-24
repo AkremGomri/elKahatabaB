@@ -1,7 +1,7 @@
 const server = require('./server');
 const io = require("socket.io")(server, { 
   cors: {    
-    origin: "http://127.0.0.1:5502",
+    origin: ["http://127.0.0.1:5502","*"],
     methods: ["GET", "POST"],
     allowedHeaders: ["my-custom-header"],
     credentials: true

@@ -4,7 +4,7 @@ const messageController =require("../controllers/messageController");
 const router = express.Router();
 
 
-router.get('/',messageController.getMessage);
+router.get('/',(req,res)=>{res.send("message listen")});
 router.get('/:userId',messageController.getMessagesByUserId);
 
 router.post('/',messageController.addMessage);
