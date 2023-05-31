@@ -10,6 +10,7 @@ const auth=require('../middlewares/auth');
 router.get('/recommanded', auth,  userCtrl.getRecommandedUsers)
 router.get('/getMyNotifs', auth, userCtrl.getMyNotifications)
 router.get('/conversations', roomController.getAllConversations);
+router.get('/name/', userCtrl.getUsersByName);
 router.get('/', userCtrl.getAllUser);
 router.get('/:id',userCtrl.getOneUser);
 router.delete('/:id',userCtrl.deleteUser);

@@ -21,6 +21,10 @@ const MessageSchema = mongoose.Schema({
   isActive:{
     type:Boolean,
     default:true,
+  },
+  time:{
+    type:Date,
+    default: new Date(),
   }
 });
 

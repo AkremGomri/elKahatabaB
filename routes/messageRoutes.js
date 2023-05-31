@@ -4,8 +4,10 @@ const messageController =require("../controllers/messageController");
 const router = express.Router();
 
 
-router.get('/',(req,res)=>{res.send("message listen")});
-router.get('/:userId',messageController.getMessagesByUserId);
+router.get('/',messageController.getMessage);
+router.post('/room/chat',messageController.getRoomChat)
+router.get('/user/:id',messageController.getMessagesByUserId);
+router.get('/room/:id',messageController.getMessagesByRoomId);
 
 router.post('/',messageController.addMessage);
 

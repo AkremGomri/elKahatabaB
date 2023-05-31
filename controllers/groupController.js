@@ -2,8 +2,19 @@ const groupServices =require("../services/groupService");
 
 exports.createGroup = async(req,res)=>{
     try {
-        const group= await groupServices.create(req.body);
-        res.status(200).json({message:"group created",group})
+        const {name,members}=req.body;
+        const isRoomExists= await groupServices.isExists({members:{$all: members}});
+        if(!isRoomExists){
+            const isRoomCreate= await groupServices.create({
+                name,
+                members
+            });
+            res.status(200).json({message:"room created ",room:isRoomCreate})
+        }else{
+           
+            res.status(200).json({message:"room already exists",room:isRoomExists})
+        }
+        
     } catch (err) {
         console.log(err)
     }

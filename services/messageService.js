@@ -29,7 +29,7 @@ const getMany = async (findDto, options = { population: [], select: [] }) => {
     const message = await Message.find(findDto, options.select)
       .populate(options.population || [])
       .exec();
-    if (!users)
+    if (!message)
       throw new NotFoundError("messages not found", {
         time: new Date(),
         findDto,

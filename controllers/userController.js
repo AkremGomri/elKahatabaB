@@ -8,6 +8,9 @@ const fs = require('fs');
 const socket = require('../middlewares/socket');
 const { default: mongoose } = require('mongoose');
 
+const userService = require("../services/userService");
+const groupService=require("../services/groupService");
+
 exports.resetPassword = async (req, res, next) => { 
   try{
 		const v = new Validator(req.body, {
@@ -452,3 +455,28 @@ exports.deletePhoto=(req,res,next )=>{
           res.status(500).json({ error :error});
       });
 };
+
+
+
+exports.getUsersByName = async(req,res)=>{
+  try{
+    const queryParam = req.query.query; 
+    const findData={ 
+      $or: [
+      { fullname: { $regex: queryParam, $options: 'i' } },
+      { email: { $regex: queryParam, $options: 'i' } }
+    ]}
+    const options = {
+      select: 'fullname pseudo Photo'
+    }
+    const usersList = await userService.getMany(findData,options);
+    // const groupQuery={ 
+    //   members:{$all: [sender, receiver]}
+    // }
+    // const userGroups=await groupService.getMany()
+    res.status(200).json({message:"users list",data:usersList});
+  }
+  catch(err){
+    console.log(err)
+  }
+}
