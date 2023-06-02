@@ -103,8 +103,27 @@ exports.getRoomChat = async (req, res) => {
     });
     console.log("====",isRoomExists);
     const room_id = isRoomExists._id;
-    const roomChat = await messageService.getMany({room_id });
-    res.status(200).json({ message: "room messages", roomChat });
+    const options={
+      population:[
+        {
+          path:'sender',
+          select:'fullname pseudo Photo gender'
+        }
+      ]
+    }
+    const roomChat = await messageService.getMany({room_id },options);
+    // console.log("====>",roomChat)
+    const responeResult = roomChat.map((doc) => ({
+      _id:doc?._id,
+      content: doc.content,
+      sender_id: doc.sender?._id,
+      sender_name: doc.sender?.fullname,
+      room_id: doc.room_id,
+      time: doc.time,
+      photo: doc.sender?.Photo,
+      gender: doc.sender?.gender
+    }));
+    res.status(200).json({ message: "room messages",room_id,roomChat:responeResult});
   } catch (err) {
     console.log(err);
   }

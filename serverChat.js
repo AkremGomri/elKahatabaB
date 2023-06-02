@@ -54,33 +54,81 @@ const io = new Server(server, {
     origin: "*",
   },
 });
-
+const users = {};
 io.on("connection", (socket) => {
-  console.log("a user connected", socket.conn.id);
+  console.log("a user connected", socket.id);
   // create the room
-  socket.on('createRoom', async (room) => {
-    // const {sender, receiver}=room;
-    // console.log(roomId)
-    // const isRoomExists = await groupService.isExists({ members: { $all: [sender, receiver] }});
-    // Join the room
-    socket.join(room);
+  // socket.on('createRoom', async (room) => {
+  //   // const {sender, receiver}=room;
+  //   // console.log(roomId)
+  //   // const isRoomExists = await groupService.isExists({ members: { $all: [sender, receiver] }});
+  //   // Join the room
+  //   socket.join(room);
 
-    // Send a confirmation message to the client
-    socket.emit('roomCreated', room);
-  })
+  //   // Send a confirmation message to the client
+  //   socket.emit('roomCreated', room);
+  // })
 
-// send the messages
-  socket.on('sendMessage', async (roomId, body) => {
+  // register user
+  socket.on("register", (userId) => {
+    users[userId] = socket.id;
+    console.log(`User ${userId} registered with socket ID: ${socket.id}`);
+    console.log("users in list ===>", users);
+  });
+  // send the messages
+  socket.on("sendMessage", async (roomId, message) => {
     // Emit the message to all clients in the room
-       console.log("message in room ",roomId,body)
-       const {sender,content} = body;
-       const messages = await messageService.create({sender,room_id:roomId,content});
-        io.to(roomId).emit('message', messages);
+    console.log("roomID===",roomId,"message===",message);
+    console.log("message ==>", message);
+    const { sender, receiver, content } = message;
+    const recipientSocketId = users[receiver];
+    const senderDetails =await userService.getById(sender,{select: 'fullname pseudo gender Photo'})
+    const {_id,fullname,pseudo,Photo,gender}=senderDetails;
+    // const receiverDetails =await userService.getById(receiver,{select: 'fullname pseudo '})
+    if (recipientSocketId) {
+      const messages = await messageService.create({
+        sender,
+        room_id: roomId,
+        content,
+        time:new Date()
+      });
+      const {time,room_id}=messages;
+      const responseMessage={
+        sender_id:_id,
+        sender_name:fullname,
+        pseudo,
+        photo:Photo,
+        gender,
+        time,
+        content,
+        room_id
+      }
+      io.to(recipientSocketId).emit("incomingMessage", responseMessage);
+      io.to(socket.id).emit("incomingMessage", responseMessage);
+      console.log(`Message sent from ${socket.id} to ${receiver}`);
+    } else {
+      const messages = await messageService.create({
+        sender,
+        room_id: roomId,
+        content,
+        time:new Date()
+      });
+      console.log(`Recipient user ${receiver} not found`);
+    }
+    console.log("users in list ===>", users);
   });
 
+  socket.on("disconnect", () => {
+    const userId = Object.keys(users).find((key) => users[key] === socket.id);
+    if (userId) {
+      delete users[userId];
+      console.log(`User ${userId} disconnected`);
+      console.log("users in list ===>", users);
+    }
+  });
 });
 
-server.listen(process.env.PORT, "127.0.0.1",() => {
+server.listen(process.env.PORT, "127.0.0.1", () => {
   console.log(`Server started on Port: ${process.env.PORT}`);
 });
 
@@ -91,10 +139,6 @@ app.all("*", function (req, res) {
 
 module.exports = app;
 
-
-
-
-// socket.on("message", async (body) => {
 //   console.log("data: ", body);
 //   const { sender, receiver, content, room_id } = body;
 //   if (!room_id) {

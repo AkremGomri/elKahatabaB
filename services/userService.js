@@ -15,5 +15,11 @@ const getMany = async (findDto, options = { population: [], select: [] }) => {
     return users;
   };
 
-
-module.exports={isExists ,getMany};
+  const getById = async (Id,options = { population: [], select: [] }) => {
+    const user = await User.findById(Id,options.select).populate(options.population).exec();
+    if (!user){
+      throw Error('group not found');
+    }
+    return user;
+  };
+module.exports={isExists ,getMany,getById};
