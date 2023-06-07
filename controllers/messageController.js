@@ -45,6 +45,7 @@ exports.addMessage = async (req, res) => {
           sender,
           room_id,
           file:path,
+          content:content?content:"",
           time: new Date(),
         });
        
@@ -74,6 +75,7 @@ exports.addMessage = async (req, res) => {
           sender,
           room_id,
           file:path,
+          content:content?content:"",
           time: new Date(),
         });
        
