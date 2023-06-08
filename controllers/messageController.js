@@ -35,39 +35,46 @@ exports.addMessage = async (req, res) => {
         const senderDetails = await userService.isExists({ _id: sender });
         const receiverDetails = await userService.isExists({ _id: receiver });
         const name = senderDetails.fullname + "," + receiverDetails.fullname;
-        const isRoomCreate = await groupService.create({
-          name,
-          members: [senderDetails, receiverDetails],
-        });
-        const room_id = isRoomCreate._id;
-        // console.log("room datails =====>", isRoomCreate);
-        const messages = await messageService.create({
-          sender,
-          room_id,
-          file:path,
-          content:content?content:"",
-          time: new Date(),
-        });
-       
-          console.log("io ==>",messages);
-  
-          const recipientSocketId = userSocket.users[receiver];
-          const senderSocketId= userSocket.users[sender];
-          if(recipientSocketId && senderSocketId){
-            socket.incomingMessage(recipientSocketId,senderSocketId,messages);
-          }else{
-            console.log("user are not connected in socket")
-          }
-  
-  
+        if(senderDetails && receiverDetails ){
+          const isRoomCreate = await groupService.create({
+            name,
+            members: [senderDetails, receiverDetails],
+          });
+          const room_id = isRoomCreate._id;
+          // console.log("room datails =====>", isRoomCreate);
+          const messages = await messageService.create({
+            sender,
+            room_id,
+            file:path,
+            content:content?content:"",
+            time: new Date(),
+          });
+         
+            console.log("io ==>",messages);
+    
+            const recipientSocketId = userSocket.users[receiver];
+            const senderSocketId= userSocket.users[sender];
+            if(recipientSocketId && senderSocketId){
+              socket.incomingMessage(recipientSocketId,senderSocketId,messages);
+            }else{
+              console.log("user are not connected in socket")
+            }
+            res
+            .status(200)
+            .json({
+              message: "message send successfully",
+              room: isRoomCreate,
+              messages,
+             
+            });
+        }else{
           res
           .status(200)
           .json({
-            message: "message send successfully",
-            room: isRoomCreate,
-            messages,
-           
+            message: "Users are not exists",
           });
+        }
+        
   
       } else {
         const room_id = isRoomExists._id;
