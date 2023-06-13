@@ -242,7 +242,6 @@ exports.getRoomChat = async (req, res) => {
     const isRoomExists = await groupService.isExists({
       members: { $all: [sender, receiver] },
     });
-    console.log("====", isRoomExists);
     const room_id = isRoomExists._id;
     const options = {
       population: [
@@ -253,7 +252,7 @@ exports.getRoomChat = async (req, res) => {
       ],
     };
     const roomChat = await messageService.getMany({ room_id }, options);
-    // console.log("====>",roomChat)
+    console.log("====>",roomChat)
     const responeResult = roomChat.map((doc) => ({
       _id: doc?._id,
       content: doc.content,
@@ -261,7 +260,7 @@ exports.getRoomChat = async (req, res) => {
       sender_name: doc.sender?.fullname,
       room_id: doc.room_id,
       time: doc.time,
-      file: doc?.file|| null,
+      file: doc?.file || "",
       gender: doc.sender?.gender,
     }));
     res
