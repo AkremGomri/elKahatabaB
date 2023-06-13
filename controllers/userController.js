@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Room = require('../models/Room');
 const { Validator } = require('node-input-validator');
 const fs = require('fs');
+const path = require("path");
 const socket = require('../middlewares/socket');
 const { default: mongoose } = require('mongoose');
 
@@ -478,5 +479,65 @@ exports.getUsersByName = async(req,res)=>{
   }
   catch(err){
     console.log(err)
+  }
+}
+
+
+exports.updateProfile = async (req,res)=>{
+  try {
+    const {id}=req.params;
+    // console.log("ID =>> ",id);
+    const userDetails= await userService.getById(id);
+    const {Photo} = userDetails;
+    let prePhoto= Photo.replace(/^.*[\\/]/, '');
+    // console.log("Photo", prePhoto,"user details",userDetails);
+    let {file,fileName, fileType,...rest}=req.body;
+    
+    fileName = fileName + '_'+(new Date()).getTime()+"."+fileType;
+    // Remove the data URL prefix (e.g., "data:image/png;base64,")
+    const base64Data = file.replace(/^data:image\/\w+;base64,/, "");
+    // Create a buffer from the base64 data
+    const buffer = Buffer.from(base64Data, "base64");
+
+    // Specify the path to the files folder outside of the controller folder
+    const filesFolder = path.join(__dirname, "../profiles");
+
+    // Create the file path
+    const filePath = path.join(filesFolder, fileName);
+
+    const afterFileSave = async (pathOfFile = undefined)=>{
+      if(pathOfFile){;
+        console.log("pathof file",pathOfFile);
+        pathOfFile = process.env.FILE_URL + `/profiles/${pathOfFile}`;
+      }
+      
+      const updateProfile= await userService.update(id,{Photo:pathOfFile,rest})
+      // fs.unlink()
+
+      res.status(200).json({message:"profile updated ",data:updateProfile});
+    }
+    // Write the buffer contents to the file
+   fs.writeFile(filePath, buffer, (error) => {
+      if (error) {
+        afterFileSave()
+        // Handle the error appropriately
+      } else {
+        afterFileSave(fileName)
+        // File saved successfully
+        fs.unlink("./profiles/"+prePhoto,(err) => {
+          if (err) {
+            console.error('Error deleting file:', err);
+          } else {
+            console.log('File deleted successfully');
+          }
+        })
+      }
+    });
+
+    
+    // console.log("====>> ",Photo,rest)
+    
+  } catch (err) {
+    console.log(err);
   }
 }

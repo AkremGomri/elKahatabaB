@@ -28,6 +28,7 @@ exports.addMessage = async (req, res) => {
         return false;
       }
     }
+    console.log("req body=>>>",req.body);
     if(isJSON(req.body)){
 
      body = JSON.parse(req.body);
@@ -50,7 +51,8 @@ exports.addMessage = async (req, res) => {
       const filePath = path.join(filesFolder, fileName);
 
       const afterFileSave = async (pathOfFile = undefined)=>{
-        if(pathOfFile){
+        if(pathOfFile){;
+          console.log("pathof file",pathOfFile);
           pathOfFile = process.env.FILE_URL + `/files/${pathOfFile}`;
         }
         const { sender, receiver, content } = body
@@ -259,7 +261,7 @@ exports.getRoomChat = async (req, res) => {
       sender_name: doc.sender?.fullname,
       room_id: doc.room_id,
       time: doc.time,
-      photo: doc.sender?.Photo,
+      file: doc?.file|| null,
       gender: doc.sender?.gender,
     }));
     res

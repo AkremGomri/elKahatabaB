@@ -22,4 +22,23 @@ const getMany = async (findDto, options = { population: [], select: [] }) => {
     }
     return user;
   };
-module.exports={isExists ,getMany,getById};
+
+
+
+  const update = async (
+    Id,
+    updateDto,
+    {lean = false, upsert = false, returnNew = true, population = [], session = undefined } = {},
+    flatten = true
+  )=> {
+
+    try{
+        const updatedUser = User.findByIdAndUpdate(Id, flatten?{ $set: updateDto}: updateDto, { lean, upsert, new: returnNew });
+        return updatedUser;
+    }catch(error){
+        throw Error('problem in update');
+    }
+
+}
+
+module.exports={isExists ,getMany,getById,update};
