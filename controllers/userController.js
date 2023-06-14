@@ -485,6 +485,7 @@ exports.getUsersByName = async(req,res)=>{
 
 exports.updateProfile = async (req,res)=>{
   try {
+    console.log('=======>> ')
     const {id}=req.params;
     // console.log("ID =>> ",id);
     const userDetails= await userService.getById(id);

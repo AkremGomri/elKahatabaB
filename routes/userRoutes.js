@@ -31,7 +31,7 @@ router.post('/notificationsRead/:id', auth, userCtrl.NotificationsRead)
 router.put('/ques/:id',auth,multer,userCtrl.saveques);
 router.put('/password-reset/:id',auth,userCtrl.resetPassword);
 // update user profile
-router.patch('/update-profile/:id',userCtrl.updateProfile);
+router.put('/update-profile/:id',userCtrl.updateProfile);
 router.delete('/delete-conversation/:roomId', roomController.deleteConversation);
 /*           matches            */
 
