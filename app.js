@@ -90,15 +90,17 @@ if (process.env.NODE_ENV !== "test") {
   app.use(logger("dev"));
 }
 app.use(cors());
-app.use(express.json());
+app.use(express.json({limit: 30000000000} ));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: false}));
 
 
 // 
-app.use("/api", apiRouter);
+
 
 app.use('/files', express.static('files'));
+// api routs
+app.use("/api", apiRouter);
 
 app.all("*", function (req, res) {
   return res, "Page not found";

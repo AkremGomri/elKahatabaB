@@ -487,7 +487,7 @@ exports.updateProfile = async (req,res)=>{
   try {
     console.log('=======>> ')
     const {id}=req.params;
-    // console.log("ID =>> ",id);
+    console.log("ID =>> ",id);
     const userDetails= await userService.getById(id);
     const {Photo} = userDetails;
     let prePhoto= Photo.replace(/^.*[\\/]/, '');
