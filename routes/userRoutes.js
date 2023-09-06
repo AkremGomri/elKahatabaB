@@ -32,6 +32,7 @@ router.put('/ques/:id',auth,multer,userCtrl.saveques);
 router.put('/password-reset/:id',auth,userCtrl.resetPassword);
 // update user profile
 router.put('/update-profile/:id',userCtrl.updateProfile);
+router.put('/update-bio/:id',userCtrl.updateBio);
 router.delete('/delete-conversation/:roomId', roomController.deleteConversation);
 /*           matches            */
 

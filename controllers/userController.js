@@ -482,6 +482,22 @@ exports.getUsersByName = async(req,res)=>{
   }
 }
 
+exports.updateBio =async(req,res)=>{
+  try{
+    console.log('=======>> ')
+    const {id}=req.params;
+    const body=req.body;
+    console.log("ID =>> ",id);
+    const updateBio= await userService.update(id,body);
+    if(updateBio){
+      res.status(200).json({message:"bio updated ",data:updateBio});
+    }
+    res.status(400).json({message:"bio not updated ",data:updateBio});
+  
+  }catch(err){
+    console.log(err);
+  }
+}
 
 exports.updateProfile = async (req,res)=>{
   try {
@@ -493,7 +509,6 @@ exports.updateProfile = async (req,res)=>{
     let prePhoto= Photo.replace(/^.*[\\/]/, '');
     // console.log("Photo", prePhoto,"user details",userDetails);
     let {file,fileName, fileType,...rest}=req.body;
-    
     fileName = fileName + '_'+(new Date()).getTime()+"."+fileType;
     // Remove the data URL prefix (e.g., "data:image/png;base64,")
     const base64Data = file.replace(/^data:image\/\w+;base64,/, "");
@@ -505,11 +520,11 @@ exports.updateProfile = async (req,res)=>{
 
     // Create the file path
     const filePath = path.join(filesFolder, fileName);
-
+    
     const afterFileSave = async (pathOfFile = undefined)=>{
       if(pathOfFile){;
         console.log("pathof file",pathOfFile);
-        pathOfFile = process.env.FILE_URL + `/profiles/${pathOfFile}`;
+        pathOfFile = process.env.FILE_URL + `/files/${pathOfFile}`;
       }
       
       const updateProfile= await userService.update(id,{Photo:pathOfFile,rest})
