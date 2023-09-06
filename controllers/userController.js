@@ -524,7 +524,7 @@ exports.updateProfile = async (req,res)=>{
     const afterFileSave = async (pathOfFile = undefined)=>{
       if(pathOfFile){;
         console.log("pathof file",pathOfFile);
-        pathOfFile = process.env.FILE_URL + `/files/${pathOfFile}`;
+        pathOfFile = process.env.FILE_URL + `/profiles/${pathOfFile}`;
       }
       
       const updateProfile= await userService.update(id,{Photo:pathOfFile,rest})

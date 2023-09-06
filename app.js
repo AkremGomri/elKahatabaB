@@ -99,6 +99,7 @@ app.use(bodyParser.urlencoded({ extended: false}));
 
 
 app.use('/files', express.static('files'));
+app.use('/profiles', express.static('profiles'));
 // api routs
 app.use("/api", apiRouter);
 
