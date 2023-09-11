@@ -99,7 +99,7 @@ exports.signup = (req, res, next) => {
         .then(() => {
           res.status(201).json({ message: "utilisateur crée!" })})
         .catch(error => {
-          res.status(500).json({ error })
+          res.status(500).json({ message:error.message })
         });
 
     })
